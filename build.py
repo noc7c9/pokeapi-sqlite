@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import collections
 import csv
 import glob
 import os
@@ -7,7 +8,6 @@ import re
 import sqlite3
 import subprocess
 import sys
-from collections import defaultdict
 
 
 def info(*args): print('INFO:', *args, file=sys.stderr)
@@ -74,7 +74,7 @@ def get_column_is_nullable(type_counts):
 
 
 def counts(iterable):
-    counts = defaultdict(int)
+    counts = collections.defaultdict(int)
     for item in iterable:
         counts[item] += 1
     return counts
@@ -83,7 +83,9 @@ def counts(iterable):
 if __name__ == '__main__':
     # Clone
     if not os.path.exists('pokeapi'):
+        info('Cloning PokeAPI repo...')
         subprocess.call(['git', 'clone', '--depth=1', 'https://github.com/PokeAPI/pokeapi.git'])
+
 
     # Build
     try:
