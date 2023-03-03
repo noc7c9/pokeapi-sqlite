@@ -2,6 +2,7 @@
 
 import collections
 import csv
+import datetime
 import glob
 import os
 import re
@@ -95,6 +96,26 @@ if __name__ == '__main__':
 
     db = sqlite3.connect('pokeapi.sqlite')
 
+
+    # Add metadata
+    db.execute('CREATE TABLE __metadata (key TEXT PRIMARY KEY, value TEXT)')
+
+    sql = 'INSERT INTO __metadata VALUES (?, ?)'
+
+    now = datetime.datetime.utcnow().isoformat()
+    info(f'Created at: {now}')
+    db.execute(sql, ('created_at', now))
+
+    pokeapi_git_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd='pokeapi').decode('utf8').strip()
+    info(f'PokeAPI Git SHA: {pokeapi_git_sha}')
+    db.execute(sql, ('pokeapi_git_sha', pokeapi_git_sha))
+
+    pokeapi_sqlite_git_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('utf8').strip()
+    info(f'PokeAPI SQLite Git SHA: {pokeapi_sqlite_git_sha}')
+    db.execute(sql, ('pokeapi_sqlite_git_sha', pokeapi_sqlite_git_sha))
+
+
+    # Add pokeapi data
     for file in glob.glob('pokeapi/data/v2/csv/*.csv'):
         table_name = os.path.splitext(os.path.basename(file))[0]
         info(f'Importing {table_name}...')
