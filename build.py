@@ -9,10 +9,7 @@ import re
 import sqlite3
 import subprocess
 import sys
-
-
-def info(*args): print('INFO:', *args, file=sys.stderr)
-def warn(*args): print('WARN:', *args, file=sys.stderr)
+import utils as u
 
 
 # src: pokeapi/data/v2/build.py
@@ -82,10 +79,15 @@ def counts(iterable):
 
 
 if __name__ == '__main__':
+    # Handles --help
+    u.parse_args(description='Builds the pokeapi.sqlite file. It will clone the PokeAPI repo if it does not exist.')
+
+
     # Clone
     if not os.path.exists('pokeapi'):
-        info('Cloning PokeAPI repo...')
+        u.info('Cloning PokeAPI repo...')
         subprocess.call(['git', 'clone', '--depth=1', 'https://github.com/PokeAPI/pokeapi.git'])
+        u.info()
 
 
     # Build
@@ -103,22 +105,24 @@ if __name__ == '__main__':
     sql = 'INSERT INTO __metadata VALUES (?, ?)'
 
     now = datetime.datetime.utcnow().isoformat()
-    info(f'Created at: {now}')
+    u.info(f'Created at: {now}')
     db.execute(sql, ('created_at', now))
 
     pokeapi_git_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd='pokeapi').decode('utf8').strip()
-    info(f'PokeAPI Git SHA: {pokeapi_git_sha}')
+    u.info(f'PokeAPI Git SHA: {pokeapi_git_sha}')
     db.execute(sql, ('pokeapi_git_sha', pokeapi_git_sha))
 
     pokeapi_sqlite_git_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('utf8').strip()
-    info(f'PokeAPI SQLite Git SHA: {pokeapi_sqlite_git_sha}')
+    u.info(f'PokeAPI SQLite Git SHA: {pokeapi_sqlite_git_sha}')
     db.execute(sql, ('pokeapi_sqlite_git_sha', pokeapi_sqlite_git_sha))
+
+    u.info()
 
 
     # Add pokeapi data
     for file in glob.glob('pokeapi/data/v2/csv/*.csv'):
         table_name = os.path.splitext(os.path.basename(file))[0]
-        info(f'Importing {table_name}...')
+        u.info(f'Importing {table_name}...')
 
         with open(file, 'rt', encoding='utf8') as f:
             reader = csv.reader(f)
@@ -159,7 +163,7 @@ if __name__ == '__main__':
             # Ensure all rows have the same number of columns
             for i, row in enumerate(rows):
                 if len(row) != column_count:
-                    warn(f'Row has wrong number of columns (expected {column_count}): {row}')
+                    u.warn(f'Row has wrong number of columns (expected {column_count}): {row}')
                     rows[i] = (row + [None] * column_count)[:column_count]
 
             # Insert the data, all values will be coerced by SQLite
