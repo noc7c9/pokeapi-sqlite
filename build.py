@@ -78,22 +78,41 @@ def counts(iterable):
 
 
 if __name__ == '__main__':
-    # Handles --help
-    u.parse_args(description='Builds the pokeapi.sqlite file. It will clone the PokeAPI repo if it does not exist.')
+    args = u.parse_args(
+        description='Builds the pokeapi.sqlite file. It will clone the PokeAPI repo if it does not exist.',
+        args={
+            '--overwrite': {
+                'action': 'store_true',
+                'help': 'Overwrite the pokeapi.sqlite file if it exists',
+            },
+            '--no-clone': {
+                'action': 'store_true',
+                'help': 'Do not clone the PokeAPI repo if it does not exist',
+            },
+        }
+    )
 
 
     # Clone
     if not os.path.exists('pokeapi'):
+        if args.no_clone:
+            u.error('PokeAPI repo does not exist.')
+            sys.exit(1)
+
         u.info('Cloning PokeAPI repo...')
         subprocess.call(['git', 'clone', '--depth=1', 'https://github.com/PokeAPI/pokeapi.git'])
         u.info()
 
 
     # Build
-    try:
+    if os.path.exists('pokeapi.sqlite'):
+        if not args.overwrite:
+            u.error('The pokeapi.sqlite file already exists.')
+            sys.exit(1)
+
+        u.warn('Removing existing pokeapi.sqlite file...')
         os.remove('pokeapi.sqlite')
-    except OSError:
-        pass
+        u.info()
 
     db = sqlite3.connect('pokeapi.sqlite')
 
