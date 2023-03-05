@@ -26,7 +26,6 @@ def scrub_string(string):
 
     If you find this results in weird strings please take a stab at improving or re-writing.
     """
-    return string
     groups = re.findall(GROUP_RGX, string)
     for group in groups:
         if group[0]:
