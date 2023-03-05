@@ -50,20 +50,20 @@ class Color:
 
 def info(*args):
     if len(args) == 0:
-        print()
+        print(file=sys.stderr)
         return
     print(Color.blue('[INFO]'), *args, file=sys.stderr)
 
 
 def warn(*args):
     if len(args) == 0:
-        print()
+        print(file=sys.stderr)
         return
     print(Color.yellow('[WARN]'), *args, file=sys.stderr)
 
 
 def error(*args):
     if len(args) == 0:
-        print()
+        print(file=sys.stderr)
         return
     print(Color.red('[ERROR]'), *args, file=sys.stderr)

@@ -137,7 +137,13 @@ if __name__ == '__main__':
     u.info()
 
 
+    # Close and re-open the database to ensure the total_changes count doesn't include the metadata
+    db.close()
+    db = sqlite3.connect('pokeapi.sqlite')
+
+
     # Add pokeapi data
+    total_tables = 0
     for file in glob.glob('pokeapi/data/v2/csv/*.csv'):
         table_name = os.path.splitext(os.path.basename(file))[0]
         u.info(f'Importing {table_name}...')
@@ -177,6 +183,7 @@ if __name__ == '__main__':
                         row[col_idx] = scrub_string(row[col_idx])
 
             db.execute(f'CREATE TABLE "{table_name}" ({",".join(sql)})')
+            total_tables += 1
 
             # Ensure all rows have the same number of columns
             for i, row in enumerate(rows):
@@ -187,3 +194,16 @@ if __name__ == '__main__':
             # Insert the data, all values will be coerced by SQLite
             db.executemany(f'INSERT INTO "{table_name}" VALUES ({",".join("?" * column_count)})', rows)
             db.commit()
+
+    total_rows = db.total_changes
+    db.close()
+
+    u.info()
+    u.info('Database Metadata:')
+    u.info(f'   Tables: {total_tables}')
+    u.info(f'   Rows: {total_rows}')
+    filesize = os.path.getsize("pokeapi.sqlite")
+    u.info(f'   File Size: {filesize / 1024 / 1024:.2f} MB ({filesize} bytes)')
+
+    u.info()
+    u.info('Done!')
