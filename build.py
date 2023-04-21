@@ -138,6 +138,7 @@ if __name__ == '__main__':
 
 
     # Close and re-open the database to ensure the total_changes count doesn't include the metadata
+    db.commit()
     db.close()
     db = sqlite3.connect('pokeapi.sqlite')
 
