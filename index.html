@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>PokeAPI.sqlite</title>
+
+        <script
+            crossorigin
+            src="https://cdn.jsdelivr.net/npm/@twind/cdn@1.0.8/cdn.global.js"
+        ></script>
+        <script>
+            twind.install({ hash: false });
+        </script>
+
+        <link rel="preload" as="script" href="./worker.js" />
+        <link
+            rel="preload"
+            as="script"
+            crossorigin
+            href="https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.js"
+        />
+        <link
+            rel="preload"
+            as="fetch"
+            crossorigin
+            href="https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.wasm"
+        />
+        <link
+            rel="preload"
+            as="fetch"
+            crossorigin
+            href="https://raw.githubusercontent.com/noc7c9/pokeapi.sqlite/dist/pokeapi.sqlite.gz"
+        />
+        <script defer src="./index.js"></script>
+
+        <script
+            defer
+            crossorigin
+            src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js"
+        ></script>
+    </head>
+    <body class="flex h-screen flex-row bg-zinc-900" x-data="{ tabs: [] }">
+        <div
+            id="sidebar"
+            class="w-80 flex-none overflow-x-hidden overflow-y-scroll border-r-2 border-gray-700 px-2 py-1 text-zinc-200"
+            x-data="{ isLoading: true, tables: [] }"
+            x-init="
+                tables = await listTables();
+                isLoading = false;
+            "
+        >
+            <div x-show="isLoading" class="text-center">Loading...</div>
+            <ul x-show="!isLoading">
+                <template x-for="table in tables">
+                    <li
+                        x-text="table"
+                        @click="tabs.push({ type: 'table', name: table })"
+                    ></li>
+                </template>
+            </ul>
+        </div>
+
+        <div id="main" class="flex-1 overflow-y-scroll px-2 py-1">
+            <ul>
+                <template x-for="tab in tabs">
+                    <li x-text="pretty(tab)"></li>
+                </template>
+            </ul>
+        </div>
+    </body>
+</html>
