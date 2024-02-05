@@ -42,10 +42,29 @@
             src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.0/dist/cdn.min.js"
         ></script>
     </head>
-    <body class="flex h-screen flex-row bg-zinc-900" x-data="{ tabs: [] }">
+    <body class="flex h-screen flex-row bg-zinc-900" x-data="{
+        tabs: [],
+        activeTab: 0,
+        activateTab(index) {
+            this.tabs[this.activeTab].active = false;
+            this.tabs[index].active = true;
+            this.activeTab = index;
+        },
+        openTableTab(tableName) {
+            // look for existing table tab and activate it if found
+            const existing = this.tabs.findIndex(t => t.type === 'table' && t.name === tableName);
+            if (existing !== -1) {
+                this.activateTab(existing);
+                return;
+            }
+            // otherwise create new table tab
+            this.tabs.push({ type: 'table', name: tableName, active: false });
+            this.activateTab(this.tabs.length - 1);
+        },
+    }">
         <div
             id="sidebar"
-            class="w-80 flex-none overflow-x-hidden overflow-y-scroll border-r-2 border-gray-700 px-2 py-1 text-zinc-200"
+            class="w-80 flex-none overflow-x-hidden overflow-y-auto border-r-2 border-gray-700 px-2 py-1 text-zinc-200"
             x-data="{ isLoading: true, tables: [] }"
             x-init="
                 tables = await listTables();
@@ -55,16 +74,13 @@
             <div x-show="isLoading" class="text-center">Loading...</div>
             <ul x-show="!isLoading">
                 <template x-for="table in tables">
-                    <li
-                        x-text="table"
-                        @click="tabs.push({ type: 'table', name: table })"
-                    ></li>
+                    <li x-text="table" @click="openTableTab(table)"></li>
                 </template>
             </ul>
         </div>
 
-        <div id="main" class="flex-1 overflow-y-scroll px-2 py-1">
-            <ul>
+        <div id="main" class="flex-1 overflow-y-auto px-2 py-1">
+            <ul class="text-white">
                 <template x-for="tab in tabs">
                     <li x-text="pretty(tab)"></li>
                 </template>
