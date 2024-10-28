@@ -18,6 +18,7 @@ jobs:
               uses: actions/checkout@v4
 
             - name: Build SQLite file
+              shell: bash
               run: python3 ./build.py 2>&1 | tee build.log
 
             - name: Create compressed files for distribution
