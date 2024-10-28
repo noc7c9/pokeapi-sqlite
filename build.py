@@ -44,6 +44,8 @@ def scrub_string(string):
 INT_PATTTERN = re.compile(r'^-?\d+$') # Matches: 123, -123, 0
 REAL_PATTERN = re.compile(r'^(?:-?\d+\.\d*|\.\d+)$') # Matches: 123.456, -123.456, 0.456, .456, 123.
 def get_value_type(value):
+    if not value:
+        return 'NULL'
     if INT_PATTTERN.match(value):
         return 'INTEGER'
     if REAL_PATTERN.match(value):
@@ -68,6 +70,13 @@ def get_column_type(type_counts):
 def get_column_is_nullable(type_counts):
     # if there is even a single NULL value, the column is NULLABLE
     return type_counts['NULL'] > 0
+
+
+def safe_index(array, index, default = None):
+    try:
+        return array[index]
+    except IndexError:
+        return default
 
 
 def counts(iterable):
@@ -152,7 +161,7 @@ if __name__ == '__main__':
         with open(file, 'rt', encoding='utf8') as f:
             reader = csv.reader(f)
 
-            # ASSUMATION: First row will always be the header
+            # ASSUMPTION: First row will always be the header
             headers = next(reader)
             column_count = len(headers)
 
@@ -161,7 +170,7 @@ if __name__ == '__main__':
             sql = []
             for col_idx, column_name in enumerate(headers):
                 # Figure out the type of the column
-                type_counts = counts(get_value_type(row[col_idx]) for row in rows)
+                type_counts = counts(get_value_type(safe_index(row, col_idx)) for row in rows)
                 column_type = get_column_type(type_counts)
                 column_is_nullable = get_column_is_nullable(type_counts)
                 column_is_primary_key = (
